@@ -4,7 +4,12 @@ export default {
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        marine: '#1A1F36',
+        ivoire: '#F5F5F5',
+      },
+    },
   },
   plugins: [],
 }

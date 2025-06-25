@@ -2,15 +2,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const MessageBubble = ({ message, isUser }) => (
-  <div className={`flex ${isUser ? 'justify-end' : 'justify-  '} mb-4`}>
+  <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
     <div
-      className={`max-w-[80%] rounded-lg p-4 ${
+      className={`max-w-[80%] rounded-xl p-4 shadow ${
         isUser
-          ? 'bg-blue-600 text-white'
-          : 'bg-gray-100 text-gray-800'
+          ? 'bg-marine text-white'
+          : 'bg-ivoire text-marine border border-marine/10'
       }`}
     >
-      <p className="text-sm">{message.content}</p>
+      <p className="text-sm leading-relaxed">{message.content}</p>
       
       {!isUser && (
         <div className="flex gap-2 mt-2">
@@ -112,10 +112,10 @@ const ChatContainer = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] bg-white rounded-lg shadow">
+    <div className="flex flex-col h-[calc(100vh-2rem)] bg-ivoire rounded-xl shadow-lg">
       {/* Header */}
-      <div className="p-4 border-b">
-        <h2 className="text-xl font-semibold text-gray-800">Assistant Juridique IA</h2>
+      <div className="p-4 border-b border-marine/10 bg-marine rounded-t-xl">
+        <h2 className="text-xl font-semibold text-white tracking-wide">Assistant Juridique IA</h2>
       </div>
 
       {/* Messages */}
@@ -138,10 +138,10 @@ const ChatContainer = () => {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t">
+      <div className="p-4 border-t border-marine/10 bg-ivoire rounded-b-xl">
         <div className="flex gap-2">
           <textarea
-            className="flex-1 border rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 border border-marine/20 rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-marine bg-white text-marine"
             rows="3"
             placeholder="Posez votre question juridique..."
             value={inputMessage}
@@ -149,13 +149,13 @@ const ChatContainer = () => {
             onKeyPress={handleKeyPress}
           />
           <button
-            className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-marine text-white p-2 rounded-lg hover:bg-marine/90 transition-colors shadow"
             onClick={handleSend}
           >
             <Send className="h-6 w-6" />
           </button>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-marine/60 mt-2">
           Appuyez sur Ctrl + Entrée pour envoyer
         </p>
       </div>
