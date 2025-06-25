@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const MessageBubble = ({ message, isUser }) => (
-  <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+  <div className={`flex ${isUser ? 'justify-end' : 'justify-  '} mb-4`}>
     <div
       className={`max-w-[80%] rounded-lg p-4 ${
         isUser
@@ -11,19 +11,7 @@ const MessageBubble = ({ message, isUser }) => (
       }`}
     >
       <p className="text-sm">{message.content}</p>
-      {!isUser && message.sources && (
-        <div className="mt-2 pt-2 border-t border-gray-200">
-          <p className="text-xs text-gray-500">Sources :</p>
-          <ul className="text-xs text-gray-600 mt-1">
-            {message.sources.map((source, index) => (
-              <li key={index} className="flex items-center gap-2">
-                <span className="text-green-600">{source.confidence}%</span>
-                {source.reference}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      
       {!isUser && (
         <div className="flex gap-2 mt-2">
           <button className="p-1 hover:bg-gray-200 rounded">
