@@ -1,8 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Upload, Trash2, Folder, File } from 'lucide-react';
 
-const DocumentManager = () => {
-  const [folders, setFolders] = useState([]); // [{id, name, documents: [{id, name, size, file, status}]}]
+const DocumentManager = ({ folders, setFolders }) => {
   const fileInputRefs = useRef({});
 
   // Créer un nouveau dossier
@@ -21,6 +20,8 @@ const DocumentManager = () => {
   // Upload d'un document dans un dossier
   const handleFileSelect = async (e, folderId) => {
     const files = Array.from(e.target.files);
+    const folder = folders.find(f => f.id === folderId);
+    const folderName = folder ? folder.name : '';
     for (const file of files) {
       const docId = Math.random().toString(36).substr(2, 9);
       const newDoc = {
@@ -34,6 +35,7 @@ const DocumentManager = () => {
       // Upload
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('folder_name', folderName);
       let success = false;
       try {
         const response = await fetch('http://localhost:8000/vectorize', {

@@ -29,10 +29,11 @@ const MessageBubble = ({ message, isUser }) => (
   </div>
 );
 
-const ChatContainer = () => {
+const ChatContainer = ({ folders }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedFolderId, setSelectedFolderId] = useState('');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -45,12 +46,16 @@ const ChatContainer = () => {
 
   const sendMessageToWebhook = async (message) => {
     try {
+      const payload = {
+        question: message,
+        folder_id: selectedFolderId || null,
+      };
       const response = await fetch('http://localhost:8000/ask', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({question: message }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -114,8 +119,20 @@ const ChatContainer = () => {
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)] bg-ivoire rounded-xl shadow-lg">
       {/* Header */}
-      <div className="p-4 border-b border-marine/10 bg-marine rounded-t-xl">
+      <div className="p-4 border-b border-marine/10 bg-marine rounded-t-xl flex items-center justify-between">
         <h2 className="text-xl font-semibold text-white tracking-wide">Assistant Juridique IA</h2>
+        <div className="w-1/2">
+          <select
+            className="w-full bg-marine/50 text-white rounded-lg p-2 text-sm border border-marine/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+            value={selectedFolderId}
+            onChange={(e) => setSelectedFolderId(e.target.value)}
+          >
+            <option value="">Tous les dossiers</option>
+            {folders.map(folder => (
+              <option key={folder.id} value={folder.id}>{folder.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Messages */}
