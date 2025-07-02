@@ -1,8 +1,41 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Upload, Trash2, Folder, File } from 'lucide-react';
 
 const DocumentManager = ({ folders, setFolders }) => {
   const fileInputRefs = useRef({});
+
+  // Chargement initial des dossiers et documents
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [foldersRes, documentsRes] = await Promise.all([
+          fetch('http://localhost:8000/folders'),
+          fetch('http://localhost:8000/documents'),
+        ]);
+        const foldersData = await foldersRes.json(); // [{ id, name } ou [{ name }]
+        const documentsData = await documentsRes.json(); // [{ id, name, size, folder_name, ... }]
+
+        // On construit la structure folders attendue par l'UI
+        const foldersWithDocs = (foldersData || []).map((folder, idx) => ({
+          id: folder.id || folder.name || idx.toString(),
+          name: folder.name,
+          open: true,
+          documents: (documentsData || []).filter(doc => doc.folder_id === folder.id).map(doc => ({
+            id: doc.id,
+            name: doc.filename,
+            size: doc.size,
+            status: 'success',
+          })),
+        }));
+        setFolders(foldersWithDocs);
+      } catch (err) {
+        // En cas d'erreur, on laisse folders vide
+        setFolders([]);
+      }
+    };
+    fetchData();
+    // eslint-disable-next-line
+  }, []);
 
   // Créer un nouveau dossier
   const handleAddFolder = () => {
