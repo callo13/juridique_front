@@ -19,10 +19,10 @@ const DocumentManager = ({ folders, setFolders }) => {
         id: folder.id || folder.name || idx.toString(),
         name: folder.name,
         open: true,
-        documents: (documentsData || []).filter(doc => doc.folder_name === folder.name).map(doc => ({
+        documents: (documentsData || []).filter(doc => doc.folder_id === folder.id).map(doc => ({
           id: doc.id,
-          name: doc.name,
-          size: doc.size,
+          name: doc.filename,
+          size: doc.file_size,
           status: 'success',
         })),
       }));
