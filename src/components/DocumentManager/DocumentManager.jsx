@@ -87,16 +87,34 @@ const DocumentManager = ({ folders, setFolders }) => {
   };
 
   // Supprimer un dossier
-  const handleDeleteFolder = (folderId) => {
+  const handleDeleteFolder = async(folderId) => {
     setFolders(prev => prev.filter(f => f.id !== folderId));
+    let success = false;
+      try {
+        const response = await fetch(`http://localhost:8000/folders/${folderId}`, {
+          method: 'DELETE',
+        });
+        success = response.ok;
+      } catch {
+        success = false;
+      }
   };
 
   // Supprimer un document
-  const handleDeleteDocument = (folderId, docId) => {
+  const handleDeleteDocument = async(folderId, docId) => {
     setFolders(prev => prev.map(f => f.id === folderId ? {
       ...f,
       documents: f.documents.filter(d => d.id !== docId)
     } : f));
+    let success = false;
+      try {
+        const response = await fetch(`http://localhost:8000/documents/${docId}`, {
+          method: 'DELETE',
+        });
+        success = response.ok;
+      } catch {
+        success = false;
+      }
   };
 
   // Toggle ouverture/fermeture dossier
