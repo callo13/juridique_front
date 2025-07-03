@@ -1,53 +1,58 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Upload, Trash2, Folder, File } from 'lucide-react';
 
 const DocumentManager = ({ folders, setFolders }) => {
   const fileInputRefs = useRef({});
+  const [editingFolderId, setEditingFolderId] = useState(null);
+  const [editingFolderName, setEditingFolderName] = useState('');
 
-  // Chargement initial des dossiers et documents
+  // Factorisation du chargement initial
+  const fetchData = async () => {
+    try {
+      const [foldersRes, documentsRes] = await Promise.all([
+        fetch('http://localhost:8000/folders'),
+        fetch('http://localhost:8000/documents'),
+      ]);
+      const foldersData = await foldersRes.json();
+      const documentsData = await documentsRes.json();
+      const foldersWithDocs = (foldersData || []).map((folder, idx) => ({
+        id: folder.id || folder.name || idx.toString(),
+        name: folder.name,
+        open: true,
+        documents: (documentsData || []).filter(doc => doc.folder_name === folder.name).map(doc => ({
+          id: doc.id,
+          name: doc.name,
+          size: doc.size,
+          status: 'success',
+        })),
+      }));
+      setFolders(foldersWithDocs);
+    } catch (err) {
+      setFolders([]);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [foldersRes, documentsRes] = await Promise.all([
-          fetch('http://localhost:8000/folders'),
-          fetch('http://localhost:8000/documents'),
-        ]);
-        const foldersData = await foldersRes.json(); // [{ id, name } ou [{ name }]
-        const documentsData = await documentsRes.json(); // [{ id, name, size, folder_name, ... }]
-
-        // On construit la structure folders attendue par l'UI
-        const foldersWithDocs = (foldersData || []).map((folder, idx) => ({
-          id: folder.id || folder.name || idx.toString(),
-          name: folder.name,
-          open: true,
-          documents: (documentsData || []).filter(doc => doc.folder_id === folder.id).map(doc => ({
-            id: doc.id,
-            name: doc.filename,
-            size: doc.size,
-            status: 'success',
-          })),
-        }));
-        setFolders(foldersWithDocs);
-      } catch (err) {
-        // En cas d'erreur, on laisse folders vide
-        setFolders([]);
-      }
-    };
     fetchData();
     // eslint-disable-next-line
   }, []);
 
   // Créer un nouveau dossier
-  const handleAddFolder = () => {
+  const handleAddFolder = async () => {
     const name = prompt('Nom du dossier :');
     if (!name) return;
-    const newFolder = {
-      id: Math.random().toString(36).substr(2, 9),
-      name,
-      documents: [],
-      open: true,
-    };
-    setFolders(prev => [...prev, newFolder]);
+    try {
+      const res = await fetch('http://localhost:8000/folders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      if (res.ok) {
+        await fetchData(); // recharge la liste complète après création
+      }
+    } catch (err) {
+      // Optionnel : afficher une erreur
+    }
   };
 
   // Upload d'un document dans un dossier
@@ -153,7 +158,49 @@ const DocumentManager = ({ folders, setFolders }) => {
                 <div className="flex items-center justify-between px-4 py-3 cursor-pointer select-none" onClick={() => handleToggleFolder(folder.id)}>
                   <div className="flex items-center gap-2">
                     <Folder className="h-5 w-5 text-marine/80" />
-                    <span className="font-medium text-marine text-lg">{folder.name}</span>
+                    {editingFolderId === folder.id ? (
+                      <input
+                        className="font-medium text-marine text-lg bg-ivoire border border-marine/20 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-marine"
+                        value={editingFolderName}
+                        autoFocus
+                        onChange={e => setEditingFolderName(e.target.value)}
+                        onBlur={async () => {
+                          if (editingFolderName && editingFolderName !== folder.name) {
+                            // PUT vers le backend
+                            try {
+                              const res = await fetch(`http://localhost:8000/folders/${folder.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ name: editingFolderName }),
+                              });
+                              if (res.ok) {
+                                setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, name: editingFolderName } : f));
+                              }
+                            } catch {}
+                          }
+                          setEditingFolderId(null);
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === 'Enter') {
+                            e.target.blur();
+                          } else if (e.key === 'Escape') {
+                            setEditingFolderId(null);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <span
+                        className="font-medium text-marine text-lg hover:underline cursor-pointer"
+                        onDoubleClick={e => {
+                          e.stopPropagation();
+                          setEditingFolderId(folder.id);
+                          setEditingFolderName(folder.name);
+                        }}
+                        title="Double-cliquez pour renommer"
+                      >
+                        {folder.name}
+                      </span>
+                    )}
                     <span className="text-xs text-marine/50">({folder.documents.length} document{folder.documents.length > 1 ? 's' : ''})</span>
                   </div>
                   <div className="flex items-center gap-2">
