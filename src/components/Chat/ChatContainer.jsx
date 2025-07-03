@@ -127,7 +127,6 @@ const ChatContainer = ({ folders }) => {
             value={selectedFolderId}
             onChange={(e) => setSelectedFolderId(e.target.value)}
           >
-            <option value="">Tous les dossiers</option>
             {folders.map(folder => (
               <option key={folder.id} value={folder.id}>{folder.name}</option>
             ))}
